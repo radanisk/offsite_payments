@@ -63,10 +63,24 @@ module OffsitePayments #:nodoc:
       end
 
       result << '</form>'
-      result= result.join("\n")
+      result = result.join("\n")
+
+      instrument(service)
 
       concat(result.respond_to?(:html_safe) ? result.html_safe : result)
       nil
+    end
+
+    private
+
+    def instrument(service)
+      all_fields = service.form_fields.dup
+
+      service.raw_html_fields.each do |name, value|
+        all_fields[name] = value
+      end
+
+      ActiveSupport::Notifications.publish('offsite_payments.form_rendered', all_fields)
     end
   end
 end
