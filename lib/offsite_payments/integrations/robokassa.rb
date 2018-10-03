@@ -58,11 +58,33 @@ module OffsitePayments #:nodoc:
         end
 
         def form_fields
+          @fields['Receipt'] = JSON.generate(
+            items: [{
+              name: 'Оплата за право использования программы для ЭВМ Autodirect5',
+              quantity: 1,
+              sum: @fields['OutSum'].to_i,
+              payment_method: 'full_payment',
+              payment_object: 'service',
+              tax: 'none'
+            }]
+          )
+          @fields['Encoding'] = 'utf-8'
+          @fields['InvDesc'] = 'Оплата за право использования программы для ЭВМ Autodirect5'
           @fields.merge(OffsitePayments::Integrations::Robokassa.signature_parameter_name => generate_signature)
         end
 
         def main_params
-          [:account, :amount, :order].map {|key| @fields[mappings[key]]}
+          @fields['Receipt'] = JSON.generate(
+            items: [{
+              name: 'Оплата за право использования программы для ЭВМ Autodirect5',
+              quantity: 1,
+              sum: @fields['OutSum'].to_i,
+              payment_method: 'full_payment',
+              payment_object: 'service',
+              tax: 'none'
+            }]
+          )
+          [:account, :amount, :order, :receipt].map {|key| @fields[mappings[key]]}
         end
 
         def params
@@ -90,6 +112,7 @@ module OffsitePayments #:nodoc:
         mapping :order, 'InvId'
         mapping :description, 'Desc'
         mapping :email, 'Email'
+        mapping :receipt, 'Receipt'
       end
 
       class Notification < OffsitePayments::Notification
